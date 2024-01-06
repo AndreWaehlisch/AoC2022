@@ -1,0 +1,68 @@
+import numpy as np
+from tqdm import tqdm
+
+def distance(a, b):
+	return np.sum(np.abs(np.subtract(a, b)))
+
+empty = []
+beacons = []
+
+def add_empty(x):
+	global empty, beacons
+	if (x not in beacons) and (x not in empty):
+		empty.append(x)
+
+def add_beacon(x):
+	global empty, beacons
+	try:
+		index = empty.index(x)
+		empty.pop(index)
+	except ValueError:
+		pass
+	if x not in beacons:
+		beacons.append(x)
+
+with open("input", "r") as file:
+	for i, theline in enumerate(tqdm(file)):
+		line = theline.rstrip()
+		linesplit = line.split()
+		sensor = int(linesplit[2][2:-1]), int(linesplit[3][2:-1])
+		beacon = int(linesplit[8][2:-1]), int(linesplit[9][2:])
+		add_beacon(sensor)
+		add_beacon(beacon)
+		curdist = distance(sensor, beacon)
+		x, y = sensor
+		for ix in tqdm(range(curdist+2), leave=False, desc=f"dist: {curdist}"):
+			for iy in tqdm(range(curdist+2), leave=False):
+				test1 = (x + ix, y + iy)
+				test2 = (x + ix, y - iy)
+				test3 = (x - ix, y + iy)
+				test4 = (x - ix, y - iy)
+				dir1 = distance(sensor, test1)
+				dir2 = distance(sensor, test2)
+				dir3 = distance(sensor, test3)
+				dir4 = distance(sensor, test4)
+				if dir1 <= curdist:
+					add_empty(test1)
+				if dir2 <= curdist:
+					add_empty(test2)
+				if dir3 <= curdist:
+					add_empty(test3)
+				if dir4 <= curdist:
+					add_empty(test4)
+
+test = np.where(np.array(empty)[:, 1] == 2000000)[0]
+test = np.where(np.array(empty)[:, 1] == 10)[0]
+print("result", len(test))
+
+#for i in range(9, 12):
+#	print(f"{i:2}", end="")
+#	for j in range(-4, 27):
+#		if (j, i) in empty:
+#			print("#", end="")
+#		elif (j, i) in beacons:
+#			print("~", end="")
+#		else:
+#			print(".", end="")
+#	print("")
+
